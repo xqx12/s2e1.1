@@ -198,9 +198,12 @@ bool CexCachingSolver::lookupAssignment(const Query &query,
 
 bool CexCachingSolver::getAssignment(const Query& query, Assignment *&result) {
   KeyType key;
-  if (lookupAssignment(query, key, result))
+  if (lookupAssignment(query, key, result)){
+	std::cerr << "-------lookupAssignment return true\n"; 
     return true;
+  }
 
+  std::cerr << "-------lookupAssignment no return\n"; 
   std::vector<const Array*> objects;
   findSymbolicObjects(key.begin(), key.end(), objects);
 
@@ -339,6 +342,12 @@ CexCachingSolver::computeInitialValues(const Query& query,
     } else {
       values[i] = it->second;
     }
+	//addbyxqx201303
+	for(unsigned j=0; j<values[i].size(); j++){
+		std::cerr <<  (unsigned)  values[i][j] << ' '
+				  << (values[i][j] >= 0x20 ? (char)  values[i][j] : ' ');
+	}
+	std::cerr << "\n";
   }
   
   return true;

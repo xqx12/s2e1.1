@@ -2618,7 +2618,7 @@ void Executor::terminateStateEarly(ExecutionState &state,
   //addbyxqx201303
   getKleeInfoStream() << "=========terminateStateEarly printstate===================\n";
   xgdb_printState(getKleeInfoStream(), state, false);
-  interpreterHandler->processTestCase(state, "by xqx", "2013-03");
+  //interpreterHandler->processTestCase(state, "by xqx", "2013-03");
   getKleeInfoStream() << "=========terminateStateEarly printstate===================end\n";
   
   
@@ -3647,7 +3647,7 @@ bool Executor::getSymbolicSolution(const ExecutionState &state,
   for (unsigned i = 0; i != state.symbolics.size(); ++i)
     objects.push_back(state.symbolics[i].second);
   //addbyxqx201303
-  xgdb_printVectorArray(objects);
+  //xgdb_printVectorArray(objects);
   bool success = solver->getInitialValues(tmp, objects, values);
 //  xgdb_printVector(values);
   

@@ -42,6 +42,8 @@
 
 #include <iostream>
 
+#include <s2e/Plugins/ExecutionTracers/TestCaseGenerator.h>
+
 namespace s2e {
 namespace plugins {
 
@@ -78,6 +80,12 @@ void Example::onStateTerminate(S2EExecutionState* state)
 	//xgdb_printState(currentState,false);
 	s2e()->getMessagesStream() << "state[" << state->getID() <<  "]: +++++++++Example  onStateTerminate start\n " ;
 	s2e()->getExecutor()->xgdb_printState(s2e()->getMessagesStream(), *state , false);
+	s2e::plugins::TestCaseGenerator *tc =
+		dynamic_cast<s2e::plugins::TestCaseGenerator*>(s2e()->getPlugin("TestCaseGenerator"));
+	if (tc) {
+		tc->MyprocessTestCase(*state);
+	}
+	
 	s2e()->getMessagesStream() << "+++++++++Example  onStateTerminate end\n " ;
 }
 

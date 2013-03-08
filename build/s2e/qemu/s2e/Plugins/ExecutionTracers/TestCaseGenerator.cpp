@@ -131,6 +131,20 @@ void TestCaseGenerator::MyprocessTestCase(const S2EExecutionState &state)
 //#endif
 
     s2e()->getMessagesStream() << std::endl;
+	
+	//show a result 
+	ConcreteInputs::iterator it;
+    for (it = out.begin(); it != out.end(); ++it) {
+        const VarValuePair &vp = *it;
+        s2e()->getMessagesStream() << vp.first << ": ";
+	
+        for (unsigned i=0; i<vp.second.size(); ++i) {
+            s2e()->getMessagesStream() << std::setw(2) << std::setfill('0') << (unsigned) vp.second[i] << ' '
+									   << (vp.second[i] >= 0x20 ? (char) vp.second[i] : ' ');
+        }
+	
+        s2e()->getMessagesStream() << std::setfill(' ')<< std::endl;
+    }
 
 }
 

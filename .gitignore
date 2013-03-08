@@ -19,6 +19,7 @@
 *.tar
 *.bz
 *.bz2
+*.gz
 
 #build dir
 /build/klee/
