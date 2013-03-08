@@ -21,8 +21,17 @@
 *.bz2
 
 #build dir
-/build/
+/build/klee/
 /s2e-*/
 /test/
 /ucoretest/
+/build/llvm/
+/build/llvm-2.6/
+/build/llvm-gcc-4.2-2.6-x86_64-linux/
+/build/qemu-debug/
+/build/qemu-release/
+/build/stamps/
+/build/stp/
+/build/tools/
+/build/compile1
 
