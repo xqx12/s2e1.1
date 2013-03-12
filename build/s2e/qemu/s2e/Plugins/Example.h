@@ -41,6 +41,8 @@
 #include <s2e/Plugins/CorePlugin.h>
 #include <s2e/S2EExecutionState.h>
 
+#include "klee/Constraints.h"
+
 namespace s2e {
 namespace plugins {
 

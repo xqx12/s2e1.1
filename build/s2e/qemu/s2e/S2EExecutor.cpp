@@ -2001,7 +2001,10 @@ void S2EExecutor::branch(klee::ExecutionState &state,
 {
     assert(dynamic_cast<S2EExecutionState*>(&state));
     assert(!static_cast<S2EExecutionState*>(&state)->m_runningConcrete);
-
+	//addbyxqx
+	//m_s2e->getXqxlogsStream() << "S2EExecutor::branch called \n" ; 
+	//std::cerr <<  "----------------------------------S2EExecutor::branch called \n" ;
+	
     Executor::branch(state, conditions, result);
 
     unsigned n = conditions.size();

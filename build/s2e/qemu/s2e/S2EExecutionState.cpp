@@ -1506,6 +1506,7 @@ void S2EExecutionState::addConstraint(klee::ref<klee::Expr> e)
 {
     //Check that the added constraint is consistent with
     //the existing path constraints
+	g_s2e->getXqxlogsStream() << "addConstraint:" << e << std::endl;
     bool truth;
     Solver *solver = g_s2e->getExecutor()->getSolver();
     Query query(constraints,e);

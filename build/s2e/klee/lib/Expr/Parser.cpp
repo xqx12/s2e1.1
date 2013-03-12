@@ -703,6 +703,8 @@ NumberOrExprResult ParserImpl::ParseNumberOrExpr() {
 /// expr = [<identifier>:] paren-expr
 ExprResult ParserImpl::ParseExpr(TypeResult ExpectedType) {
   // FIXME: Is it right to need to do this here?
+	//addbyxqx but s2e not use this function
+	//std::cerr << "..............ParserImpl::ParseExpr called \n" ;
   if (Tok.kind == Token::EndOfFile) {
     Error("unexpected end of file.");
     return ExprResult();

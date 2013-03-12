@@ -9,8 +9,11 @@
 
 #include "klee/Expr.h"
 #include "klee/util/ExprVisitor.h"
+//#include "klee/Executor.h"
 
 #include "llvm/Support/CommandLine.h"
+
+extern void xgdb_printExpr(klee::Expr *e);
 
 namespace {
   llvm::cl::opt<bool>
@@ -54,6 +57,9 @@ ref<Expr> ExprVisitor::visitActual(const ref<Expr> &e) {
       return res.argument;
     }
 
+	//addbyxqx
+	//klee::Executor::getKleeInfoStream()  << ".............. ExprVisitor::visitActual called \n";
+	
     switch(ep.getKind()) {
     case Expr::NotOptimized: res = visitNotOptimized(static_cast<NotOptimizedExpr&>(ep)); break;
     case Expr::Read: res = visitRead(static_cast<ReadExpr&>(ep)); break;
@@ -100,6 +106,8 @@ ref<Expr> ExprVisitor::visitActual(const ref<Expr> &e) {
       unsigned count = ep.getNumKids();
       for (unsigned i=0; i<count; i++) {
         ref<Expr> kid = ep.getKid(i);
+		//std::cerr << "kids[" << i << "]: " << kid << "\n" ;
+		//xgdb_printExpr(kid.get());
         kids[i] = visit(kid);
         if (kids[i] != kid)
           rebuild = true;
@@ -123,6 +131,8 @@ ref<Expr> ExprVisitor::visitActual(const ref<Expr> &e) {
     }
   }
 }
+
+
 
 ExprVisitor::Action ExprVisitor::visitExpr(const Expr&) {
   return Action::doChildren();

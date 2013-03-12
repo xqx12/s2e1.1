@@ -45,6 +45,11 @@ public:
 
   void addConstraint(ref<Expr> e);
   
+  //addbyxqx201303
+  Expr::Kind getConstraintExprKind(ref<Expr> e);
+  void ParseConstraintExpr(ref<Expr> e);
+
+  
   bool empty() const {
     return constraints.empty();
   }

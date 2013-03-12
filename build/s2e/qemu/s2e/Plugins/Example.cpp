@@ -44,6 +44,8 @@
 
 #include <s2e/Plugins/ExecutionTracers/TestCaseGenerator.h>
 
+
+
 namespace s2e {
 namespace plugins {
 
@@ -79,7 +81,21 @@ void Example::onStateTerminate(S2EExecutionState* state)
 {
 	//xgdb_printState(currentState,false);
 	s2e()->getMessagesStream() << "state[" << state->getID() <<  "]: +++++++++Example  onStateTerminate start\n " ;
+	
+	//s2e()->getExecutor()->dumpX86State(s2e()->getMessagesStream());
+	state->dumpX86State(s2e()->getXqxlogsStream());
+		
 	s2e()->getExecutor()->xgdb_printState(s2e()->getMessagesStream(), *state , false);
+	
+	//s2e()->getXqxlogsStream() << state->getConstraintExprKind(state->con)  << std::endl;
+	for (klee::ConstraintManager::const_iterator it = state->constraints.begin(),
+			ie = state->constraints.end(); it != ie; ++it) {
+		s2e()->getXqxlogsStream() << *it << std::endl ;
+		//s2e()->getXqxlogsStream() << state->getConstraintExprKind(*it)  << std::endl;
+		state->ParseConstraintExpr(*it);
+	}
+	
+	
 	s2e::plugins::TestCaseGenerator *tc =
 		dynamic_cast<s2e::plugins::TestCaseGenerator*>(s2e()->getPlugin("TestCaseGenerator"));
 	if (tc) {
@@ -87,6 +103,7 @@ void Example::onStateTerminate(S2EExecutionState* state)
 	}
 	
 	s2e()->getMessagesStream() << "+++++++++Example  onStateTerminate end\n " ;
+	
 }
 
 void Example::onFork(S2EExecutionState *state,

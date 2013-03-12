@@ -664,6 +664,9 @@ static void runAndGetCex(::VC vc, STPBuilder *builder, ::VCExpr q,
     int result;
 
     result = vc_query(vc, q);
+	//addbyxqx201303
+	//print the expr q
+	//vc_printExpr(vc, q);
 
     if (result < 0) {
         if (klee_message_stream) {

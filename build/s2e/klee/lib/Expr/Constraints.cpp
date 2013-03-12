@@ -61,6 +61,47 @@ public:
   }
 };
 
+//addbyxqx
+class ExprShlVisitor : public ExprVisitor {
+private:
+	ref<Expr> src, dst;
+	
+public:
+	std::map< ref<Expr>, ref<Expr> > shlExprMap;  //collect the shl expr
+
+public:
+	ExprShlVisitor() {}
+	ExprShlVisitor(ref<Expr> _src, ref<Expr> _dst) : src(_src), dst(_dst) {}
+
+	Action visitExpr(const Expr &e) {
+		if (e == *src.get()) {
+			return Action::changeTo(dst);
+		} else {
+			return Action::doChildren();
+		}
+	}
+
+	Action visitExprPost(const Expr &e) {
+		if (e == *src.get()) {
+			return Action::changeTo(dst);
+		} else {
+			return Action::doChildren();
+		}
+	}
+	
+	void showShlMap(){
+		std::map< ref<Expr>, ref<Expr> >::const_iterator it = shlExprMap.begin();
+		for(; it != shlExprMap.end(); ){
+			it++;
+		}
+	}
+	
+	ref<Expr> ParseExpr(ref<Expr> e);
+	
+};
+
+
+
 bool ConstraintManager::rewriteConstraints(ExprVisitor &visitor) {
   ConstraintManager::constraints_ty old;
   bool changed = false;
@@ -154,3 +195,200 @@ void ConstraintManager::addConstraint(ref<Expr> e) {
   e = simplifyExpr(e);
   addConstraintInternal(e);
 }
+
+//addbyxqx201303
+Expr::Kind ConstraintManager::getConstraintExprKind(ref<Expr> e){
+	return e->getKind();
+}
+
+//addbyxqx201303  
+//parse a expr of constraint , find the mul or shl expr, and ops of them .
+void ConstraintManager::ParseConstraintExpr(ref<Expr> e) {
+	
+
+	ExprShlVisitor visitor;
+	
+	visitor.visit(e);
+	
+	visitor.showShlMap();
+	
+	return ;
+	
+}
+
+//addbyxqx201303
+//parse a expr of constraint , find the mul or shl expr, and ops of them .
+ref<Expr> ExprShlVisitor::ParseExpr(ref<Expr> e) {
+	if (isa<ConstantExpr>(e))   
+		return e;
+	
+	Expr &ep = *e.get();
+	
+	ExprVisitor::Action res =  visitExpr(ep);
+	
+	switch (ep.getKind()) {
+		case Expr::NotOptimized: res = visitNotOptimized(static_cast<NotOptimizedExpr&>(ep)); break;
+		case Expr::Read: res = visitRead(static_cast<ReadExpr&>(ep)); break;
+		case Expr::Select: res = visitSelect(static_cast<SelectExpr&>(ep)); break;
+		case Expr::Concat: res = visitConcat(static_cast<ConcatExpr&>(ep)); break;
+		case Expr::Extract: res = visitExtract(static_cast<ExtractExpr&>(ep)); break;
+		case Expr::ZExt: res = visitZExt(static_cast<ZExtExpr&>(ep)); break;
+		case Expr::SExt: res = visitSExt(static_cast<SExtExpr&>(ep)); break;
+		case Expr::Add: res = visitAdd(static_cast<AddExpr&>(ep)); break;
+		case Expr::Sub: res = visitSub(static_cast<SubExpr&>(ep)); break;
+		case Expr::Mul: res = visitMul(static_cast<MulExpr&>(ep)); break;
+		case Expr::UDiv: res = visitUDiv(static_cast<UDivExpr&>(ep)); break;
+		case Expr::SDiv: res = visitSDiv(static_cast<SDivExpr&>(ep)); break;
+		case Expr::URem: res = visitURem(static_cast<URemExpr&>(ep)); break;
+		case Expr::SRem: res = visitSRem(static_cast<SRemExpr&>(ep)); break;
+		case Expr::Not: res = visitNot(static_cast<NotExpr&>(ep)); break;
+		case Expr::And: res = visitAnd(static_cast<AndExpr&>(ep)); break;
+		case Expr::Or: res = visitOr(static_cast<OrExpr&>(ep)); break;
+		case Expr::Xor: res = visitXor(static_cast<XorExpr&>(ep)); break;
+		case Expr::Shl: res = visitShl(static_cast<ShlExpr&>(ep)); break;
+		case Expr::LShr: res = visitLShr(static_cast<LShrExpr&>(ep)); break;
+		case Expr::AShr: res = visitAShr(static_cast<AShrExpr&>(ep)); break;
+		case Expr::Eq: res = visitEq(static_cast<EqExpr&>(ep)); break;
+		case Expr::Ne: res = visitNe(static_cast<NeExpr&>(ep)); break;
+		case Expr::Ult: res = visitUlt(static_cast<UltExpr&>(ep)); break;
+		case Expr::Ule: res = visitUle(static_cast<UleExpr&>(ep)); break;
+		case Expr::Ugt: res = visitUgt(static_cast<UgtExpr&>(ep)); break;
+		case Expr::Uge: res = visitUge(static_cast<UgeExpr&>(ep)); break;
+		case Expr::Slt: res = visitSlt(static_cast<SltExpr&>(ep)); break;
+		case Expr::Sle: res = visitSle(static_cast<SleExpr&>(ep)); break;
+		case Expr::Sgt: res = visitSgt(static_cast<SgtExpr&>(ep)); break;
+		case Expr::Sge: res = visitSge(static_cast<SgeExpr&>(ep)); break;
+		case Expr::Constant:
+		default:
+			assert(0 && "invalid expression kind");
+    }	
+
+	if(ep.getKind() == Expr::Shl) {
+		BinaryExpr *be = cast<BinaryExpr>(e);
+		shlExprMap.insert(std::make_pair(be->right,
+                                         be->left));	
+	}
+	
+	switch(res.kind) {
+		default:
+			assert(0 && "invalid kind");
+		case Action::DoChildren: {  
+			//bool rebuild = false;
+			ref<Expr> ee(&ep), kids[8];
+			unsigned count = ep.getNumKids();
+			for (unsigned i=0; i<count; i++) {
+				ref<Expr> kid = ep.getKid(i);
+				//std::cerr << "kids[" << i << "]: " << kid << "\n" ;
+				//xgdb_printExpr(kid.get());
+				kids[i] = ParseExpr(kid);
+				
+			}
+			/*
+			//what is meaning?
+			if (!isa<ConstantExpr>(e)) {
+			 res = visitExprPost(*e.get());
+			 if (res.kind==Action::ChangeTo)
+			  e = res.argument;
+			}
+			*/
+			
+			return e;
+		}
+		case Action::SkipChildren:
+			return e;
+		case Action::ChangeTo:
+			return res.argument;
+    }
+	
+	
+	
+}
+
+
+/*
+//addbyxqx201303  
+//parse a expr of constraint , find the mul or shl expr, and ops of them .
+bool ConstraintManager::ParseConstraintExpr(ref<Expr> e, ExprVisitor &visitor) {
+	if (isa<ConstantExpr>(e))   
+		return false;
+		
+	Expr &ep = *e.get();
+	
+	Action res ;
+	
+	switch (ep.getKind()) {
+		case Expr::NotOptimized: res = visitor.visitNotOptimized(static_cast<NotOptimizedExpr&>(ep)); break;
+		case Expr::Read: res = visitor.visitRead(static_cast<ReadExpr&>(ep)); break;
+		case Expr::Select: res = visitor.visitSelect(static_cast<SelectExpr&>(ep)); break;
+		case Expr::Concat: res = visitor.visitConcat(static_cast<ConcatExpr&>(ep)); break;
+		case Expr::Extract: res = visitor.visitExtract(static_cast<ExtractExpr&>(ep)); break;
+		case Expr::ZExt: res = visitor.visitZExt(static_cast<ZExtExpr&>(ep)); break;
+		case Expr::SExt: res = visitor.visitSExt(static_cast<SExtExpr&>(ep)); break;
+		case Expr::Add: res = visitor.visitAdd(static_cast<AddExpr&>(ep)); break;
+		case Expr::Sub: res = visitor.visitSub(static_cast<SubExpr&>(ep)); break;
+		case Expr::Mul: res = visitor.visitMul(static_cast<MulExpr&>(ep)); break;
+		case Expr::UDiv: res = visitor.visitUDiv(static_cast<UDivExpr&>(ep)); break;
+		case Expr::SDiv: res = visitor.visitSDiv(static_cast<SDivExpr&>(ep)); break;
+		case Expr::URem: res = visitor.visitURem(static_cast<URemExpr&>(ep)); break;
+		case Expr::SRem: res = visitor.visitSRem(static_cast<SRemExpr&>(ep)); break;
+		case Expr::Not: res = visitor.visitNot(static_cast<NotExpr&>(ep)); break;
+		case Expr::And: res = visitor.visitAnd(static_cast<AndExpr&>(ep)); break;
+		case Expr::Or: res = visitor.visitOr(static_cast<OrExpr&>(ep)); break;
+		case Expr::Xor: res = visitor.visitXor(static_cast<XorExpr&>(ep)); break;
+		case Expr::Shl: res = visitor.visitShl(static_cast<ShlExpr&>(ep)); break;
+		case Expr::LShr: res = visitor.visitLShr(static_cast<LShrExpr&>(ep)); break;
+		case Expr::AShr: res = visitor.visitAShr(static_cast<AShrExpr&>(ep)); break;
+		case Expr::Eq: res = visitor.visitEq(static_cast<EqExpr&>(ep)); break;
+		case Expr::Ne: res = visitor.visitNe(static_cast<NeExpr&>(ep)); break;
+		case Expr::Ult: res = visitor.visitUlt(static_cast<UltExpr&>(ep)); break;
+		case Expr::Ule: res = visitor.visitUle(static_cast<UleExpr&>(ep)); break;
+		case Expr::Ugt: res = visitor.visitUgt(static_cast<UgtExpr&>(ep)); break;
+		case Expr::Uge: res = visitor.visitUge(static_cast<UgeExpr&>(ep)); break;
+		case Expr::Slt: res = visitor.visitSlt(static_cast<SltExpr&>(ep)); break;
+		case Expr::Sle: res = visitor.visitSle(static_cast<SleExpr&>(ep)); break;
+		case Expr::Sgt: res = visitor.visitSgt(static_cast<SgtExpr&>(ep)); break;
+		case Expr::Sge: res = visitor.visitSge(static_cast<SgeExpr&>(ep)); break;
+		case Expr::Constant:
+		default:
+			assert(0 && "invalid expression kind");
+    }	
+
+		
+	switch(res.kind) {
+		default:
+			assert(0 && "invalid kind");
+		case Action::DoChildren: {  
+			bool rebuild = false;
+			ref<Expr> e(&ep), kids[8];
+			unsigned count = ep.getNumKids();
+			for (unsigned i=0; i<count; i++) {
+				ref<Expr> kid = ep.getKid(i);
+				//std::cerr << "kids[" << i << "]: " << kid << "\n" ;
+				//xgdb_printExpr(kid.get());
+				kids[i] = visit(kid);
+				if (kids[i] != kid)
+					rebuild = true;
+			}
+			if (rebuild) {
+				e = ep.rebuild(kids);
+				if (recursive)
+					e = visit(e);
+			}
+			if (!isa<ConstantExpr>(e)) {
+				res = visitExprPost(*e.get());
+				if (res.kind==Action::ChangeTo)
+					e = res.argument;
+			}
+			return e;
+		}
+		case Action::SkipChildren:
+			return e;
+		case Action::ChangeTo:
+			return res.argument;
+    }
+			
+			
+	
+}
+*/
+

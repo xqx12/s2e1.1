@@ -74,7 +74,7 @@ void BaseInstructions::initialize()
             sigc::mem_fun(*this, &BaseInstructions::onCustomInstruction));
 	
 	//addbyxqx for test
-//	s2e()->getXqxlogsStream() << "BaseInstructions::initialize called " << std::endl;
+	s2e()->getXqxlogsStream() << "BaseInstructions::initialize called " << std::endl;
 }
 
 /** Handle s2e_op instruction. Instructions:

@@ -141,6 +141,15 @@ public:
   virtual void addConstraint(ref<Expr> e) { 
     constraints.addConstraint(e); 
   }
+  
+  //addbyxqx
+  Expr::Kind getConstraintExprKind(ref<Expr> e){
+	  return constraints.getConstraintExprKind(e);
+  }
+  
+  void ParseConstraintExpr(ref<Expr> e){
+	  return constraints.ParseConstraintExpr(e);
+  }
 
   virtual bool merge(const ExecutionState &b);
 };
