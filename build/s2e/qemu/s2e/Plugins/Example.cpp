@@ -83,17 +83,20 @@ void Example::onStateTerminate(S2EExecutionState* state)
 	s2e()->getMessagesStream() << "state[" << state->getID() <<  "]: +++++++++Example  onStateTerminate start\n " ;
 	
 	//s2e()->getExecutor()->dumpX86State(s2e()->getMessagesStream());
-	state->dumpX86State(s2e()->getXqxlogsStream());
+	//state->dumpX86State(s2e()->getXqxlogsStream());
 		
-	s2e()->getExecutor()->xgdb_printState(s2e()->getMessagesStream(), *state , false);
-	
+	//s2e()->getExecutor()->xgdb_printState(s2e()->getMessagesStream(), *state , false);
+	s2e()->getExecutor()->xgdb_printState(s2e()->getXqxlogsStream(), *state , false);
 	//s2e()->getXqxlogsStream() << state->getConstraintExprKind(state->con)  << std::endl;
+	s2e()->getXqxlogsStream() << "==================before parse================\n";
 	for (klee::ConstraintManager::const_iterator it = state->constraints.begin(),
 			ie = state->constraints.end(); it != ie; ++it) {
 		s2e()->getXqxlogsStream() << *it << std::endl ;
 		//s2e()->getXqxlogsStream() << state->getConstraintExprKind(*it)  << std::endl;
 		state->ParseConstraintExpr(*it);
 	}
+	s2e()->getXqxlogsStream() << "==================after parse================\n";
+	s2e()->getExecutor()->xgdb_printState(s2e()->getXqxlogsStream(), *state , false);
 	
 	
 	s2e::plugins::TestCaseGenerator *tc =

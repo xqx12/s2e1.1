@@ -61,7 +61,8 @@ public:
   }
 };
 
-//addbyxqx
+//----------------------------------------------------------------------------
+//addbyxqx  for get the shl expr, for intoverflow check
 class ExprShlVisitor : public ExprVisitor {
 private:
 	ref<Expr> src, dst;
@@ -74,19 +75,13 @@ public:
 	ExprShlVisitor(ref<Expr> _src, ref<Expr> _dst) : src(_src), dst(_dst) {}
 
 	Action visitExpr(const Expr &e) {
-		if (e == *src.get()) {
-			return Action::changeTo(dst);
-		} else {
-			return Action::doChildren();
-		}
+		return Action::doChildren();
+		
 	}
 
 	Action visitExprPost(const Expr &e) {
-		if (e == *src.get()) {
-			return Action::changeTo(dst);
-		} else {
-			return Action::doChildren();
-		}
+		return Action::doChildren();
+		
 	}
 	
 	void showShlMap(){
@@ -97,9 +92,10 @@ public:
 	}
 	
 	ref<Expr> ParseExpr(ref<Expr> e);
+	ref<Expr> CreateCheckExpr(ref<Expr> e);
 	
 };
-
+//----------------------------------------------------------------------------end
 
 
 bool ConstraintManager::rewriteConstraints(ExprVisitor &visitor) {
@@ -208,9 +204,15 @@ void ConstraintManager::ParseConstraintExpr(ref<Expr> e) {
 
 	ExprShlVisitor visitor;
 	
-	visitor.visit(e);
+	//visitor.ParseExpr(e);
 	
-	visitor.showShlMap();
+	//visitor.showShlMap();
+	//visitor.CreateCheckExpr(e);
+	
+	ref<Expr> ee = visitor.CreateCheckExpr(e);
+	
+	if(ee != e)
+		addConstraintInternal(ee);
 	
 	return ;
 	
@@ -304,6 +306,30 @@ ref<Expr> ExprShlVisitor::ParseExpr(ref<Expr> e) {
 	
 }
 
+ref<Expr> ExprShlVisitor::CreateCheckExpr(ref<Expr> e)
+{
+	ParseExpr(e);
+	if(shlExprMap.size() == 0)
+		return e;
+	ref<Expr> NewExpr;
+	std::map< ref<Expr>, ref<Expr> >::const_iterator it = shlExprMap.begin();
+	uint64_t u_32Limit = 0xFFFFFFFF;
+	for(; it != shlExprMap.end(); it++){
+		//it->left = 1, it->second = sym;
+		//  (0xffffffff >> it->left  ) < sym
+		ref<Expr> LimitExpr = ConstantExpr::create(u_32Limit, Expr::Int32);
+		ref<Expr> LeftExpr =  LShrExpr::create(LimitExpr, it->first);
+		ref<Expr> TmpExpr = UleExpr::create(LeftExpr, it->second);
+		if(it == shlExprMap.begin()) 
+			NewExpr = UleExpr::create(LeftExpr, it->second);
+		else
+			NewExpr = OrExpr::create(NewExpr, TmpExpr);
+		
+	}
+	
+	//addConstraintInternal(NewExpr);
+	return NewExpr;	
+}
 
 /*
 //addbyxqx201303  
