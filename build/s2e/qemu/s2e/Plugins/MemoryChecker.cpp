@@ -467,6 +467,8 @@ bool MemoryChecker::checkMemoryAccess(S2EExecutionState *state,
             break;
         }
 
+		//there some errors, for the start addr will always greater than res.first.
+		//addbyxqx201303
         if(res->first.start + res->first.size < start + size) {
             err << "MemoryChecker::checkMemoryAccess: "
                     << "BUG: memory range at " << hexval(start) << " of size " << hexval(size)
