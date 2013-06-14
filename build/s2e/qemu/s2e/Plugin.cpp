@@ -141,6 +141,7 @@ PluginsFactory::PluginsFactory()
 
     __S2E_REGISTER_PLUGIN(plugins::Debugger);
     __S2E_REGISTER_PLUGIN(plugins::Example);
+	__S2E_REGISTER_PLUGIN(plugins::Disassembler);
 
 #undef __S2E_REGISTER_PLUGIN
 }

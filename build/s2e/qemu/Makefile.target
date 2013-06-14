@@ -362,6 +362,8 @@ s2eobj-y += s2e/Plugins/Searchers/CooperativeSearcher.o
 s2eobj-y += s2e/Plugins/HostFiles.o
 
 s2eobj-y += s2e/Plugins/MemoryChecker.o
+#addbyxqx20130614
+s2eobj-y += s2e/Plugins/Disassembler.o
 
 s2eobj-y += s2e/sqlite3.o
 s2eobj-y += s2e/Database.o

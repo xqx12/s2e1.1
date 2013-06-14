@@ -26,6 +26,9 @@
 /s2e-*/
 /test/
 /ucoretest/
+/linuxtest/
+/redhattest/
+/fedora18test/
 /build/llvm/
 /build/llvm-2.6/
 /build/llvm-gcc-4.2-2.6-x86_64-linux/

@@ -40,14 +40,16 @@
 #include <s2e/Utils.h>
 #include <s2e/S2EExecutor.h>
 
+
 #include <iostream>
 
-#include <s2e/Plugins/ExecutionTracers/TestCaseGenerator.h>
+
+
 
 namespace s2e {
 namespace plugins {
 
-S2E_DEFINE_PLUGIN(Example, "Example S2E plugin", "",);
+S2E_DEFINE_PLUGIN(Example, "Example S2E plugin", "","Disassembler");
 
 void Example::initialize()
 {
@@ -56,15 +58,20 @@ void Example::initialize()
     m_traceBlockExecution = s2e()->getConfig()->getBool(
                         getConfigKey() + ".traceBlockExecution");
 
-    s2e()->getCorePlugin()->onTranslateBlockStart.connect(
-            sigc::mem_fun(*this, &Example::slotTranslateBlockStart));
-*/	
+
+	
 	s2e()->getCorePlugin()->onStateSwitch.connect(sigc::mem_fun(*this, &Example::onStateSwitch));
 	
 	s2e()->getCorePlugin()->onStateTerminate.connect(sigc::mem_fun(*this, &Example::onStateTerminate));
+*/	
+	m_disassembler = static_cast<Disassembler*>(s2e()->getPlugin("Disassembler"));
+    assert(m_disassembler);
 
+	s2e()->getCorePlugin()->onTranslateBlockStart.connect(
+		sigc::mem_fun(*this, &Example::slotTranslateBlockStart));
 	//addbyxqx
-	//s2e()->getMessagesStream() << "Example Test \n " ;
+	s2e()->getMessagesStream() << "Example Test \n " ;
+	
 }
 
 //addbyxqx201303
@@ -104,10 +111,31 @@ void Example::slotTranslateBlockStart(ExecutionSignal *signal,
                                       TranslationBlock *tb,
                                       uint64_t pc)
 {
-    if(m_traceBlockTranslation)
-        std::cout << "Translating block at " << std::hex << pc << std::dec << std::endl;
-    if(m_traceBlockExecution)
-        signal->connect(sigc::mem_fun(*this, &Example::slotExecuteBlockStart));
+    //if(m_traceBlockTranslation)
+    //    std::cout << "Translating block at " << std::hex << pc << std::dec << std::endl;
+    //if(m_traceBlockExecution)
+    //    signal->connect(sigc::mem_fun(*this, &Example::slotExecuteBlockStart));
+	
+	signal->connect(
+        sigc::mem_fun(*this, &Example::onTraceInstruction)
+    );
+	
+}
+
+void Example::onTraceInstruction(S2EExecutionState* state, uint64_t pc)
+{
+	unsigned char insnBuf[20] = {0};
+	unsigned char disInsnBuf[128] = {0};
+	int bP = 0;
+	
+	state->readMemoryConcrete(pc, &insnBuf, 16);
+//	s2e()->getMessagesStream() << "Executing Instruction at " << std::hex << pc << " opcode: " << std::hex << (unsigned)insnBuf[0] << std::endl;
+	
+	s2e::plugins::Disassembler::INSTRUCTION  instruction;
+	m_disassembler->Disassemble((unsigned int)pc, (unsigned char*)insnBuf, &instruction, (char*)disInsnBuf, bP);
+	if(bP){
+		s2e()->getMessagesStream() << "disInstruction: " << disInsnBuf << std::endl;
+	}
 }
 
 void Example::slotExecuteBlockStart(S2EExecutionState *state, uint64_t pc)

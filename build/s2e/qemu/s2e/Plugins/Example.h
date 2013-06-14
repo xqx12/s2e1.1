@@ -40,6 +40,8 @@
 #include <s2e/Plugin.h>
 #include <s2e/Plugins/CorePlugin.h>
 #include <s2e/S2EExecutionState.h>
+#include <s2e/Plugins/Disassembler.h>
+#include <s2e/Plugins/ExecutionTracers/TestCaseGenerator.h>
 
 namespace s2e {
 namespace plugins {
@@ -62,10 +64,15 @@ public:
                 const std::vector<S2EExecutionState*>& newStates,
                 const std::vector<klee::ref<klee::Expr> >& newConditions
 			   );
+	void onTraceInstruction(S2EExecutionState* state, uint64_t pc);
+
+	Disassembler *m_disassembler;	
 
 private:
     bool m_traceBlockTranslation;
     bool m_traceBlockExecution;
+	
+
 };
 
 } // namespace plugins
